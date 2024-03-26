@@ -1,4 +1,3 @@
-// ColorPicker.tsx
 import React from 'react';
 
 interface ColorPickerProps {
