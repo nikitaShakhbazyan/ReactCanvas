@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import './main.css';
-import { CanvasProps } from './types';
+import {CanvasProps } from './types';
 
 const Canvas: React.FC<CanvasProps> = ({ width, height, balls, setBalls }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
