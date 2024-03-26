@@ -1,30 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import './main.css';
+import { CanvasProps } from './types';
 
-interface Ball {
-  x: number;
-  y: number;
-  radius: number;
-  color: string;
-  dx: number;
-  dy: number;
-}
-
-interface CanvasProps {
-  width: number;
-  height: number;
-  balls: Ball[];
-}
-
-const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
+const Canvas: React.FC<CanvasProps> = ({ width, height, balls, setBalls }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedBallIndex, setSelectedBallIndex] = useState<number | null>(null);
-  const [ballsState, setBallsState] = useState<Ball[]>(balls);
-  const animationIdRef = useRef<any>();
-
-  useEffect(() => {
-    setBallsState(balls);
-  }, [balls]);
+  const animationIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,14 +15,14 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      ballsState.forEach(ball => {
+
+      balls.forEach(ball => {
         ball.x += ball.dx;
         ball.y += ball.dy;
 
         ball.dx *= 0.99;
         ball.dy *= 0.99;
-        
+
         if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) {
           ball.dx *= -1;
         }
@@ -56,24 +36,24 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
         ctx.fill();
       });
 
-      for (let i = 0; i < ballsState.length; i++) {
-        for (let j = i + 1; j < ballsState.length; j++) {
-          const dx = ballsState[j].x - ballsState[i].x;
-          const dy = ballsState[j].y - ballsState[i].y;
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
+          const dx = balls[j].x - balls[i].x;
+          const dy = balls[j].y - balls[i].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < ballsState[i].radius + ballsState[j].radius) {
+          if (distance < balls[i].radius + balls[j].radius) {
             const angle = Math.atan2(dy, dx);
-            const targetX = ballsState[i].x + Math.cos(angle) * (ballsState[i].radius + ballsState[j].radius);
-            const targetY = ballsState[i].y + Math.sin(angle) * (ballsState[i].radius + ballsState[j].radius);
+            const targetX = balls[i].x + Math.cos(angle) * (balls[i].radius + balls[j].radius);
+            const targetY = balls[i].y + Math.sin(angle) * (balls[i].radius + balls[j].radius);
 
-            const ax = (targetX - ballsState[j].x) * 0.1;
-            const ay = (targetY - ballsState[j].y) * 0.1;
+            const ax = (targetX - balls[j].x) * 0.1;
+            const ay = (targetY - balls[j].y) * 0.1;
 
-            ballsState[i].dx -= ax;
-            ballsState[i].dy -= ay;
-            ballsState[j].dx += ax;
-            ballsState[j].dy += ay;
+            balls[i].dx -= ax;
+            balls[i].dy -= ay;
+            balls[j].dx += ax;
+            balls[j].dy += ay;
           }
         }
       }
@@ -83,56 +63,47 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
 
     animationIdRef.current = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(animationIdRef.current);
-  }, [ballsState]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (selectedBallIndex !== null) {
-      const mouseX = e.nativeEvent.offsetX;
-      const mouseY = e.nativeEvent.offsetY;
-      const selectedBall = ballsState[selectedBallIndex];
-
-      const dx = mouseX - selectedBall.x;
-      const dy = mouseY - selectedBall.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      if (distance < selectedBall.radius) {
-        const pushForce = 0.3;
-        selectedBall.dx -= dx * pushForce;
-        selectedBall.dy -= dy * pushForce;
+    return () => {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
       }
-    }
-  };
-
-  const handleMouseUp = () => {
-    setSelectedBallIndex(null);
-  };
+    };
+  }, [balls]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const clickX = e.nativeEvent.offsetX;
     const clickY = e.nativeEvent.offsetY;
 
-    for (let i = 0; i < ballsState.length; i++) {
-      const dx = clickX - ballsState[i].x;
-      const dy = clickY - ballsState[i].y;
+    const updatedBalls = balls.map(ball => {
+      const dx = clickX - ball.x;
+      const dy = clickY - ball.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < ballsState[i].radius) {
-        setSelectedBallIndex(i);
-        break;
+      if (distance < ball.radius) {
+        if (ball.color === 'white') {
+          const invertedDx = ball.dx * 30;
+          const invertedDy = ball.dy * 30;
+          return { ...ball, dx: invertedDx, dy: invertedDy };
+        } else {
+          const newColor = prompt('Enter new color:', ball.color);
+          if (newColor) {
+            return { ...ball, color: newColor };
+          }
+        }
       }
-    }
+      return ball;
+    });
+
+    setBalls(updatedBalls);
   };
-  
+
   return (
     <div className='canvasDiv'>
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
-        onMouseMove={handleMouseMove}
         onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
         style={{ border: '3px solid black' }}
       />
     </div>

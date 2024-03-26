@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Canvas from './Canvas';
 import './main.css';
 
@@ -22,10 +22,12 @@ function App() {
     { x: 100 + radius * 2, y: canvasHeight / 2 + radius, radius: radius, color: 'rgb(0, 0, 255)', dx: 0, dy: 0 },
   ];
 
+  const [balls, setBalls] = useState([...triangleBalls, whiteBall]);
+
   return (
     <div className="App">
       <h1>Pool!</h1>
-      <Canvas width={canvasWidth} height={canvasHeight} balls={[whiteBall, ...triangleBalls]} />
+      <Canvas width={canvasWidth} height={canvasHeight} balls={balls} setBalls={setBalls} />
     </div>
   );
 }
