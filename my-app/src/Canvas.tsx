@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
+import './main.css'
+
 
 interface Ball {
   x: number;
@@ -81,26 +83,46 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
   }, [balls]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setMousePos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+    const mouseX = e.nativeEvent.offsetX;
+    const mouseY = e.nativeEvent.offsetY;
+    
+    balls.forEach(ball => {
+      const dx = mouseX - ball.x;
+      const dy = mouseY - ball.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < ball.radius) {
+        const pushForce = 0.3; 
+        ball.dx -= dx * pushForce; 
+        ball.dy -= dy * pushForce;
+      }
+    });
   };
+  
 
   const handleMouseUp = () => {
     setMousePos(null);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const newBall = {
-      x: e.nativeEvent.offsetX,
-      y: e.nativeEvent.offsetY,
-      radius: Math.random() * 20 + 10,
-      color: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`,
-      dx: Math.random() * 4 - 2,
-      dy: Math.random() * 4 - 2,
-    };
-    balls.push(newBall);
+    const clickX = e.nativeEvent.offsetX;
+    const clickY = e.nativeEvent.offsetY;
+  
+    balls.forEach(ball => {
+      const dx = clickX - ball.x;
+      const dy = clickY - ball.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+  
+      if (distance < ball.radius) {
+        const pushForce = 1; 
+        ball.dx += dx * pushForce;
+        ball.dy += dy * pushForce;
+      }
+    });
   };
-
+  
   return (
+    <div className='canvasDiv'>
     <canvas
       ref={canvasRef}
       width={width}
@@ -108,8 +130,9 @@ const Canvas: React.FC<CanvasProps> = ({ width, height, balls }) => {
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      style={{ border: '1px solid black' }}
+      style={{ border: '3px solid black' }}
     />
+    </div>
   );
 };
 
