@@ -1,6 +1,5 @@
 # ReactCanvas
+The Pool prototype using React/TS/Canvas
+Live : https://react-canvas-eta.vercel.app/
 
-Необходимо выполнить в отдельном проекте и залить на сервер демку, в котором его можно потрогать. В качестве ответа приложить URL демки и открытый репозиторий с кодом. 
-Напишите демку "биллиард" на canvas, без использования сторонних библиотек отрисовки и физики.
-
-Технологии: Canvas, TS, React 
+First experience using Canvas!
